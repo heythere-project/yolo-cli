@@ -1,0 +1,16 @@
+{
+  "name": "yolo-cli",
+  "version": "0.0.1",
+  "author": "Sebastian <sebastian@heythere.de>",
+  "description": "Command line tools for yolo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heythere-project/yolo.git"
+  },
+  "dependencies": {
+    "optimist": "*"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
+}
