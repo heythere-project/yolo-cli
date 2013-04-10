@@ -10,13 +10,19 @@ var usage = [
 		
 	].join('\n'),
 	fs = require('fs'),
-	model_template,
-	controller_template,
 	format = function(str){
 		return str.charAt(0).toUpperCase() + str.slice(1);
 	},
+	
+	model_template,
+	controller_template,
+	dev_config,
+	prod_config,
+	serverJS,
+
 	tab1 = "	",
 	tab2 = "		",
+
 	args = require('optimist')
 			.usage(usage)
 			.demand('_')
@@ -91,6 +97,85 @@ var usage = [
 		"",
 		"module.exports = $0;"
 	].join('\n');
+
+	dev_config = {
+		http : {
+			port : 8081,
+			respondWith : 'html',
+			statics : 'app/public/',
+			notAuthorizedRedirect : '#',
+			session : {
+				secret : '…'
+			},
+			logger : 'HTTP :remote-addr :method :url :status :res[content-length] ":referrer" ":user-agent" :response-time ms'
+		},
+
+		database : {
+			name : '…'
+		},
+
+		liveReload : 'app/**/*.js',
+
+		logger : {
+			levels : {
+				console : 0,
+				file : 3
+			}
+		},
+
+		model : {
+			attachments : {
+				host : "http://localhost:5984/…/",
+				includeExtension : false,
+			}
+		}
+	};
+
+	prod_config = {
+		http : {
+			port : 8081,
+			respondWith : 'html',
+			statics : 'app/public/',
+			notAuthorizedRedirect : '#',
+			session : {
+				secret : '…'
+			},
+			logger : 'HTTP :remote-addr :method :url :status :res[content-length] ":referrer" ":user-agent" :response-time ms'
+		},
+
+		database : {
+			name : '…'
+		},
+
+		logger : {
+			levels : {
+				console : 5,
+				file : 2
+			}
+		},
+
+		model : {
+			attachments : {
+				host : "http://localhost:5984/…/",
+				includeExtension : false,
+			}
+		}
+	};
+
+	serverJS = [
+		"process.title = 'Yolo.Server'; ",
+		"",
+		"var Yolo = require('yolo-server'),",
+    	tab1 + 	"server = new Yolo();",
+    	"",
+		"server.run({",
+    		tab1 + "app : 'app/',",
+    		tab1 + "config : 'config/'",
+		"});",
+	].join('\n');
+
+
+
 
 if(args._[0] === "controller"){
 	var path = args.path + 'controllers',
@@ -253,4 +338,30 @@ if(args._[0] === "controller"){
 
 	fs.writeFileSync(path + '/' + name + '.js', model_template);
 	console.log('\033[34m%s\033[39m' , "Created model '" + format(name) + "' at " + path + '/' + name + '.js' + " ✔");
+} else if(args._[0] === "app"){
+	var path = process.env.PWD,
+		util = require("util"),
+		folders = ["/app", "/app/models", "/app/controllers", "/app/views", "/app/public", "/config", "/config/logs"];
+
+		folders.map(function(folder){
+			if( !fs.existsSync(path + folder)){
+				fs.mkdirSync(path + folder);
+				console.log('\033[34m%s\033[39m', "Created Folder " + path + folder + " ✔");
+			}  
+		});
+
+		fs.writeFileSync(path + '/config/development.js' , util.inspect(dev_config, {
+			depth : null
+		}));
+		
+		console.log('\033[34m%s\033[39m', "Created Development config " + path + '/config/development.js' + " ✔");
+		
+		fs.writeFileSync(path + '/config/production.js' , util.inspect(prod_config, {
+			depth : null
+		}));
+		
+		console.log('\033[34m%s\033[39m', "Created Production config " +path + '/config/production.js' + " ✔");
+
+		fs.writeFileSync(path + '/server.js' , serverJS);
+		console.log('\033[34m%s\033[39m', "Created server.js " +path + '/server.js' + " ✔");
 }
