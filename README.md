@@ -3,7 +3,7 @@ Command Line Utilities for yolo.
 
 ##Install
  ```sh 
-npm install yolo-cli -g
+$ npm install yolo-cli -g
 ```
 ###Scaffolding Yolo Models
 Generate Models easily with the generator.js . This would generate a model named "post" with attributes title, content and author and title would be required field.
